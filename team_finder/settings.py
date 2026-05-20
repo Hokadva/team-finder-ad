@@ -71,11 +71,11 @@ WSGI_APPLICATION = "team_finder.wsgi.application"
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': os.environ.get('POSTGRES_DB', 'teamfinder'),
-        'USER': os.environ.get('POSTGRES_USER', 'team_admin'),
-        'PASSWORD': os.environ.get('POSTGRES_PASSWORD', 'my_secure_password_123'),
-        'HOST': os.environ.get('DB_HOST', 'localhost'),  # Внутри докера это имя сервиса 'teamfinder_db'
-        'PORT': os.environ.get('DB_PORT', '5432'),
+        'NAME': config('POSTGRES_DB', default='teamfinder'),
+        'USER': config('POSTGRES_USER', default='tf_admin'),
+        'PASSWORD': config('POSTGRES_PASSWORD'),
+        'HOST': config('POSTGRES_HOST', default='db'),
+        'PORT': config('POSTGRES_PORT', default='5432'),
     }
 }
 
