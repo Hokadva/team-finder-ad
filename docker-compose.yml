@@ -30,7 +30,7 @@ services:
     volumes:
       - .:/app
       - media_data:/app/media
-      - static_backend:/app/static_backend
+      - ./static_backend:/app/static_backend
     depends_on:
       db:
         condition: service_healthy
@@ -44,7 +44,7 @@ services:
       - "80:80"
     volumes:
       - ./nginx.conf:/etc/nginx/nginx.conf:ro
-      - static_backend:/var/html/static/
+      - ./static_backend:/var/html/static/:ro
       - media_data:/var/html/media/
     depends_on:
       - web
@@ -53,4 +53,3 @@ services:
 volumes:
   postgres_data:
   media_data:
-  static_backend:
