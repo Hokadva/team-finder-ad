@@ -57,18 +57,17 @@
 1) Поскольку Docker-контейнеры изолированы, для безопасной передачи параметров авторизации и связывания Django с СУБД PostgreSQL необходимо создать локальный файл окружения.
   - `nano .env`
 
-2) Вставьте в файл конфигурационные параметры:
+2) Вставьте в файл конфигурационные параметры (пример наполнения):
 ```
-  DEBUG=False
-  SECRET_KEY=django_secure_prod_secret_key
+  DJANGO_SECRET_KEY=django-secret-key
+  DJANGO_DEBUG=False
   ALLOWED_HOSTS=localhost,127.0.0.1,0.0.0.0
-  DATABASE=postgres
-  DB_ENGINE=django.db.backends.postgresql
-  DB_NAME=team_finder_db
-  DB_USER=postgres_user
-  DB_PASSWORD=super_secure_db_password_123
-  DB_HOST=db
-  DB_PORT=5432
+  DJANGO_ALLOWED_HOSTS=*
+  POSTGRES_DB=teamfinder
+  POSTGRES_USER=admin-admin
+  POSTGRES_PASSWORD=secure-password
+  POSTGRES_HOST=db
+  POSTGRES_PORT=5432
 ```
 3) Сохраните изменения
 
@@ -96,6 +95,6 @@ Installed 12 objects from 1 fixture(s)
 [INFO] Listening at: [http://0.0.0.0:8000](http://0.0.0.0:8000)
 ```
 
-###Шаг 6. Тестирование работоспособности в браузере
+### Автор
 
-Откройте веб-браузер и перейдите по адресу: http://localhost:8000 (или укажите внешний IP-адрес вашего выделенного сервера).
+Говорушенко Егор - govorushenkoegor@gmail.com
