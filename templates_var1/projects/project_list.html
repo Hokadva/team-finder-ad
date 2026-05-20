@@ -25,6 +25,27 @@
         {% include 'includes/empty-project-card.html' with empty_title="Пока нет проектов" empty_message="Создавайте проекты и делитесь ими с другими пользователями!" button_link="/projects/create-project" button_text="+ Создать проект" %}
         {% endfor %}
     </div>
+    {% if is_paginated %}
+    <div class="pagination">
+        <div class="filter-chips">
+            {% if page_obj.has_previous %}
+                <a href="?page={{ page_obj.previous_page_number }}" class="filter-chip">←</a>
+            {% endif %}
+
+            {% for num in page_obj.paginator.page_range %}
+                {% if page_obj.number == num %}
+                    <span class="filter-chip active">{{ num }}</span>
+                {% else %}
+                    <a href="?page={{ num }}" class="filter-chip">{{ num }}</a>
+                {% endif %}
+            {% endfor %}
+
+            {% if page_obj.has_next %}
+                <a href="?page={{ page_obj.next_page_number }}" class="filter-chip">→</a>
+            {% endif %}
+        </div>
+    </div>
+    {% endif %}
     {% include 'includes/project-fav-toggle.js' %}
 </div>
 
