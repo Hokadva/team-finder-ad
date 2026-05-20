@@ -10,8 +10,8 @@ SECRET_KEY = config("DJANGO_SECRET_KEY")
 DEBUG = config("DJANGO_DEBUG", default=False, cast=bool)
 
 ALLOWED_HOSTS = config(
-    "DJANGO_ALLOWED_HOSTS", 
-    default="localhost,127.0.0.1", 
+    "DJANGO_ALLOWED_HOSTS",
+    default="localhost,127.0.0.1",
     cast=lambda v: [s.strip() for s in v.split(',')]
 )
 
