@@ -21,8 +21,8 @@ class UserFilter(django_filters.FilterSet):
 
         if value == FILTER_CHOICES[0][0]:
             return queryset.filter(
-                owned_projects__in=self.request.user.favorites.all()
-                ).distinct()
+                owned_projects__in=self.request.user.favorites.
+                all()).distinct()
 
         elif value == FILTER_CHOICES[1][0]:
             return queryset.filter(
@@ -31,12 +31,11 @@ class UserFilter(django_filters.FilterSet):
 
         elif value == FILTER_CHOICES[2][0]:
             return queryset.filter(
-                favorites__in=self.request.user.owned_projects.all()
-                ).distinct()
+                favorites__in=self.request.user.owned_projects.
+                all()).distinct()
 
         elif value == FILTER_CHOICES[3][0]:
             return queryset.filter(
                 participated_projects__in=self.request.user.
-                owned_projects.all()
-                ).distinct()
+                owned_projects.all()).distinct()
         return queryset
