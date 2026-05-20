@@ -1,14 +1,35 @@
+version: '3.8'
+
 services:
-  db:
-    image: postgres:16
-    env_file:
-      - .env
-    container_name: teamfinder_db
-    ports:
-      - "5432:5432"
+  teamfinder_db:
+    image: postgres:15-alpine
+    container_name: teamfinder_postgres
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
     volumes:
       - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
     restart: always
-
+  web:
+    build: .
+    container_name: teamfinder_web
+    command: >
+      sh -c "python manage.py collectstatic --noinput &&
+             python manage.py migrate &&
+             python manage.py runserver 0.0.0.0:8000"
+    volumes:
+      - .:/app
+      - django_static:/app/static_backend
+    ports:
+      - "8000:8000"
+    env_file:
+      - .env
+    depends_on:
+      - teamfinder_db
+    restart: always
 volumes:
   postgres_data:
+  django_static:
