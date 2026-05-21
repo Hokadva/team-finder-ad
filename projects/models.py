@@ -1,13 +1,16 @@
 from django.db import models
 from django.urls import reverse
 
-from core.consts import STATUS_CHOICES
+from core.consts import (
+    ProjectStatus, MAXPROJECTNAMELENGTH, MAXPROJECTSTATUSLENGTH)
 from users.models import User
 
 
 class Project(models.Model):
-    name = models.CharField(max_length=200, verbose_name='название проекта')
-    description = models.TextField(blank=True, verbose_name='описание проекта')
+    name = models.CharField(
+        max_length=MAXPROJECTNAMELENGTH, verbose_name='название проекта')
+    description = models.TextField(
+        blank=True, verbose_name='описание проекта')
     owner = models.ForeignKey(
         User,
         on_delete=models.CASCADE,
@@ -17,9 +20,9 @@ class Project(models.Model):
     created_at = models.DateTimeField(verbose_name='дата создания проекта')
     github_url = models.URLField(blank=True, verbose_name='ссылка на Github')
     status = models.CharField(
-        max_length=6,
-        choices=STATUS_CHOICES,
-        default='open',
+        max_length=MAXPROJECTSTATUSLENGTH,
+        choices=ProjectStatus.CHOICES,
+        default=ProjectStatus.CHOICES[0][0],
         verbose_name='статус проекта'
     )
     participants = models.ManyToManyField(

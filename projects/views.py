@@ -4,10 +4,13 @@ from django.http import JsonResponse
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
 from django.views.generic import CreateView, DetailView, ListView, UpdateView
+from django.contrib.auth.decorators import login_required
+from django.views.decorators.http import require_http_methods
+from http import HTTPStatus
 
-from core.consts import STATUS_CHOICES
-from core.decorators import login_required_message
-from core.mixins import ProjectDeterminateContext
+from core.consts import (
+    ProjectStatus, PROJECTLISTPAGINATENUM)
+from core.mixins import ProjectDeterminateContext, OwnerRequiredMixin
 
 from .forms import ProjectForm
 from .models import Project
@@ -16,7 +19,7 @@ from .models import Project
 class ProjectListView(ListView):
     model = Project
     template_name = 'projects/project_list.html'
-    paginate_by = 12
+    paginate_by = PROJECTLISTPAGINATENUM
     context_object_name = 'projects'
     form_class = ProjectForm
     ordering = ['-created_at']
@@ -28,7 +31,8 @@ class ProjectDetailView(DetailView):
     form_class = ProjectForm
 
 
-class ProjectCreateView(ProjectDeterminateContext, CreateView):
+class ProjectCreateView(LoginRequiredMixin, ProjectDeterminateContext,
+                        CreateView):
     model = Project
     template_name = 'projects/create-project.html'
     form_class = ProjectForm
@@ -42,76 +46,73 @@ class ProjectCreateView(ProjectDeterminateContext, CreateView):
         return super().form_valid(form)
 
 
-class ProjectUpdateView(ProjectDeterminateContext, UpdateView):
+class ProjectUpdateView(
+        LoginRequiredMixin, OwnerRequiredMixin,
+        ProjectDeterminateContext, UpdateView):
     model = Project
     template_name = 'projects/create-project.html'
     form_class = ProjectForm
 
-    def dispatch(self, request, *args, **kwargs):
-        project = self.get_object()
-        if project.owner != request.user:
-            raise PermissionDenied('Вы не являетесь автором этого проекта')
-        return super().dispatch(request, *args, **kwargs)
 
-
-@login_required_message()
+@login_required
+@require_http_methods(["POST"])
 def toggle_participate(request, pk):
-    if request.method == 'POST':
-        project = get_object_or_404(Project, pk=pk)
-        if project.status == STATUS_CHOICES[1][0]:
-            return JsonResponse(
-                {'status': 'error', 'message': 'Проект закрыт'}, status=400)
-        if request.user == project.owner:
-            return JsonResponse({'status': 'error'}, status=400)
-        is_participant = project.participants.filter(id=request.user.id
-                                                     ).exists()
-        if is_participant:
-            project.participants.remove(request.user)
-            is_participant = False
-        else:
-            project.participants.add(request.user)
-            is_participant = True
-        return JsonResponse({'status': 'ok',
-                             'participant': is_participant,
-                             'participants_count':
-                             project.participants.count()})
+    project = get_object_or_404(Project, pk=pk)
+    if project.status == ProjectStatus.CHOICES[1][0]:
+        return JsonResponse(
+            {'status': 'error', 'message': 'Проект закрыт'},
+            status=HTTPStatus.BAD_REQUEST)
+    if request.user == project.owner:
+        return JsonResponse({'status': 'error'},
+                            status=HTTPStatus.BAD_REQUEST)
+    if (is_participant := project.participants.filter(id=request.user.id)
+            .exists()):
+        project.participants.remove(request.user)
+    else:
+        project.participants.add(request.user)
+    return JsonResponse({'status': 'ok',
+                         'participant': not is_participant,
+                         'participants_count':
+                         project.participants.count()})
 
 
-@login_required_message()
+@login_required
+@require_http_methods(["POST"])
 def project_close(request, pk):
-    if request.method == 'POST':
-        project = get_object_or_404(Project, pk=pk)
-        if project.owner != request.user:
-            return JsonResponse({'status': 'error'}, status=403)
-        if project.status in STATUS_CHOICES[1]:
-            return JsonResponse({'status': 'error'}, status=400)
-        project.status = STATUS_CHOICES[1][0]
-        project.save()
-        return JsonResponse({
-            'status': 'ok', 'project_status': STATUS_CHOICES[1][0]})
+    project = get_object_or_404(Project, pk=pk)
+    if project.owner != request.user:
+        return JsonResponse({'status': 'error'},
+                            status=HTTPStatus.FORBIDDEN)
+    if project.status in ProjectStatus.CHOICES[1]:
+        return JsonResponse({'status': 'error'},
+                            status=HTTPStatus.BAD_REQUEST)
+    project.status = ProjectStatus.CHOICES[1][0]
+    project.save()
+    return JsonResponse({
+        'status': 'ok',
+        'project_status': ProjectStatus.CHOICES[1][0]})
 
 
-class FavoriteProjectListView(ProjectListView, LoginRequiredMixin):
+class FavoriteProjectListView(LoginRequiredMixin, ProjectListView):
     template_name = 'projects/favorite_projects.html'
 
     def get_queryset(self):
         queryset = super().get_queryset()
-        return queryset.filter(interested_users=self.request.user)
+        return queryset.filter(
+            interested_users=self.request.user).select_related(
+                'owner').prefetch_related('participants')
 
 
-@login_required_message()
+@login_required
+@require_http_methods(["POST"])
 def toggle_favorite(request, pk):
-    if request.method == 'POST':
-        project = get_object_or_404(Project, pk=pk)
-        is_favorite = project.interested_users.filter(id=request.user.id
-                                                      ).exists()
-        if is_favorite:
-            project.interested_users.remove(request.user)
-            is_favorite = False
-        else:
-            project.interested_users.add(request.user)
-            is_favorite = True
-        return JsonResponse({'status': 'ok',
-                             'participant': is_favorite,
-                             'participants_count':
-                             project.participants.count()})
+    project = get_object_or_404(Project, pk=pk)
+    if (is_favorite := project.interested_users.filter(
+       id=request.user.id).exists()):
+        project.interested_users.remove(request.user)
+    else:
+        project.interested_users.add(request.user)
+    return JsonResponse({'status': 'ok',
+                         'participant': is_favorite,
+                         'participants_count':
+                         project.participants.count()})

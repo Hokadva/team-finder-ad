@@ -3,46 +3,40 @@ from django.contrib.auth import login, logout, update_session_auth_hash
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth.views import PasswordChangeView
 from django.shortcuts import get_object_or_404, redirect, render
-from django.urls import reverse_lazy
+from django.urls import reverse
+from django.contrib.auth.decorators import login_required
 from django.views.generic import DetailView
 from django_filters.views import FilterView
-
-from core.decorators import login_required_message
 
 from .filters import UserFilter
 from .forms import (ChangePasswordForm, ChangeProfileForm, LoginForm,
                     RegisterForm)
 from .models import User
+from core.consts import USERLISTPAGINATENUM
 
 
 def register_user(request):
-    if request.method == 'POST':
-        form = RegisterForm(request.POST)
-        if form.is_valid():
-            user = form.save()
-            login(request, user)
-            return redirect('/projects/list/')
-    else:
-        form = RegisterForm()
+    form = RegisterForm(request.POST or None)
+    if form.is_valid():
+        user = form.save()
+        login(request, user)
+        return redirect('projects:project_list')
 
     return render(request, 'users/register.html', {'form': form})
 
 
 def login_user(request):
-    if request.method == 'POST':
-        form = LoginForm(request.POST)
-        if form.is_valid():
-            user = form.user
-            login(request, user)
-            return redirect('/projects/list')
-    else:
-        form = LoginForm()
+    form = LoginForm(request.POST or None)
+    if form.is_valid():
+        user = form.user
+        login(request, user)
+        return redirect('projects:project_list')
     return render(request, 'users/login.html', {'form': form})
 
 
 def logout_user(request):
     logout(request)
-    return redirect('/projects/list/')
+    return redirect('projects:project_list')
 
 
 class UserPasswordChangeView(LoginRequiredMixin, PasswordChangeView):
@@ -50,8 +44,8 @@ class UserPasswordChangeView(LoginRequiredMixin, PasswordChangeView):
     form_class = ChangePasswordForm
 
     def get_success_url(self):
-        return reverse_lazy('users:profile',
-                            kwargs={'pk': self.request.user.pk})
+        return reverse('users:profile',
+                       kwargs={'pk': self.request.user.pk})
 
     def form_valid(self, form):
         response = super().form_valid(form)
@@ -77,21 +71,19 @@ class UserProfileView(DetailView):
         context = super().get_context_data(**kwargs)
         context['user_projects'] = (self.object.owned_projects.
                                     all().order_by('-created_at'))
-        context['is_owner'] = self.request.user.is_authenticated and\
-            self.request.user.pk == self.object.pk
+        context['is_owner'] = (self.request.user.is_authenticated and self
+                               .request.user.pk == self.object.pk)
         return context
 
 
-@login_required_message()
+@login_required
 def profile_edit(request):
-    if request.method == 'POST':
-        form = ChangeProfileForm(
-            request.POST, request.FILES, instance=request.user)
-        if form.is_valid():
-            form.save()
-            return redirect('users:profile', pk=request.user.pk)
-    else:
-        form = ChangeProfileForm(instance=request.user)
+    form = ChangeProfileForm(
+        request.POST or None, request.FILES or None,
+        instance=request.user or None)
+    if form.is_valid():
+        form.save()
+        return redirect('users:profile', pk=request.user.pk)
     return render(request, 'users/edit_profile.html', {'form': form})
 
 
@@ -100,7 +92,7 @@ class UserListView(FilterView):
     template_name = 'users/participants.html'
     context_object_name = 'participants'
     filterset_class = UserFilter
-    paginate_by = 12
+    paginate_by = USERLISTPAGINATENUM
     ordering = ['-id']
 
     def get_queryset(self):

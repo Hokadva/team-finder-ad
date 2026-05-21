@@ -1,33 +1,75 @@
+from enum import StrEnum
+
+
+class Colors(StrEnum):
+    BLUE = '#4A90E2'
+    WHITE = '#FFFFFF'
+    ALMOSTBLACK = '#2C3E50'
+    BLUEGREEN = '#50E3C2'
+    SALAD = '#B8E986'
+    ORANGE = '#F5A623'
+    RED = '#D0021B'
+    YELLOW = '#F8E71C'
+    BLACKYELLOW = '#FFC107'
+
+
+class ProjectStatus:
+    OPEN = 'open'
+    CLOSED = 'closed'
+
+    CHOICES = (
+        (OPEN, 'Открыт'),
+        (CLOSED, 'Закрыт'),
+    )
+
+
 COLORSCHEME = (
-    ('#4A90E2', '#FFFFFF'),
-    ('#50E3C2', '#2C3E50'),
-    ('#B8E986', '#2C3E50'),
-    ('#F5A623', '#FFFFFF'),
-    ('#D0021B', '#FFFFFF'),
-    ('#F8E71C', '#2C3E50'),
-    ('#FFC107', '#2C3E50')
+    (Colors.BLUE, Colors.WHITE),
+    (Colors.BLUEGREEN, Colors.ALMOSTBLACK),
+    (Colors.SALAD, Colors.ALMOSTBLACK),
+    (Colors.ORANGE, Colors.WHITE),
+    (Colors.RED, Colors.WHITE),
+    (Colors.YELLOW, Colors.ALMOSTBLACK),
+    (Colors.BLACKYELLOW, Colors.ALMOSTBLACK)
 )
 
 IMAGESIZE = (200, 200)
 
 FONTSIZE = 100
 
-STATUS_CHOICES = (
-    ('open', 'Open'),
-    ('closed', 'Closed'),
-)
-
 UPOFFSET = 10
 
+WINDOWSFONTPATH = 'C:\\Windows\\Fonts\\'
+
+OTHERFONTSPATH = '/usr/share/fonts/truetype/'
+
 FONTPATH = [
-    'C:\\Windows\\Fonts\\Arial.ttf',
-    'C:\\Windows\\Fonts\\arial.ttf',
-    'C:\\Windows\\Fonts\\segoeui.ttf',
-    '/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf',
-    '/usr/share/fonts/truetype/liberation/LiberationSans-Regular.ttf',
+    f'{WINDOWSFONTPATH}Arial.ttf',
+    f'{WINDOWSFONTPATH}arial.ttf',
+    f'{WINDOWSFONTPATH}segoeui.ttf',
+    f'{OTHERFONTSPATH}dejavu/DejaVuSans.ttf',
+    f'{OTHERFONTSPATH}truetype/liberation/LiberationSans-Regular.ttf',
     '/System/Library/Fonts/Helvetica.ttc',
     '/Library/Fonts/Arial.ttf',
 ]
+
+USERLISTPAGINATENUM = 12
+
+PASSWORDMINIMUMLENGTH = 8
+
+PHONEMAXLENGTH = 12
+
+ABOUTMAXLENGTH = 256
+
+NAMEMAXLENGTH = 124
+
+SURNAMEMAXLENGTH = 124
+
+MAXPROJECTNAMELENGTH = 200
+
+MAXPROJECTSTATUSLENGTH = 6
+
+PROJECTLISTPAGINATENUM = 12
 
 FILTER_CHOICES = (
     ('owners-of-favorite-projects', 'Авторы избранных проектов'),

@@ -17,10 +17,8 @@ def get_font():
                 return ImageFont.truetype(path, size)
             except Exception:
                 continue
-    try:
+
         return ImageFont.load_default().font_variant(size=size)
-    except Exception:
-        return ImageFont.load_default()
 
 
 def generate_avatar(user):

@@ -54,7 +54,7 @@ TEMPLATES = [
     {
         "BACKEND": "django.template.backends.django.DjangoTemplates",
         "DIRS":
-        [BASE_DIR / f"templates_var{config('TASK_VERSION', default='1')}"],
+        [BASE_DIR / "templates_var1"],
         "APP_DIRS": True,
         "OPTIONS": {
             "context_processors": [
@@ -65,6 +65,8 @@ TEMPLATES = [
         },
     },
 ]
+
+LOGIN_URL = 'users:login'
 
 WSGI_APPLICATION = "team_finder.wsgi.application"
 

@@ -2,10 +2,14 @@ import re
 
 from django.core.exceptions import ValidationError
 
+from core.consts import PASSWORDMINIMUMLENGTH
+
 
 def minimum_length_validator(password):
-    if len(password) < 8:
-        raise ValidationError('Пароль должен содержать минимум 8 символов')
+    if len(password) < PASSWORDMINIMUMLENGTH:
+        raise ValidationError(
+            'Пароль должен содержать минимум'
+            f'{PASSWORDMINIMUMLENGTH} символов')
 
 
 def letter_password_validator(password):

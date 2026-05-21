@@ -1,58 +1,29 @@
-from django.contrib.auth.models import AbstractUser, BaseUserManager
+from django.contrib.auth.models import AbstractUser
 from django.db import models
-
-from core.avatar_generator import generate_avatar
-
-
-class UserManager(BaseUserManager):
-    def create_user(self, email, name, surname, password=None, **kwargs):
-        if not email:
-            raise ValueError('Email обязателен')
-        if not name:
-            raise ValueError('Имя обязательно')
-        if not surname:
-            raise ValueError('Фамилия обязательна')
-
-        email = self.normalize_email(email)
-        user = self.model(
-            email=email,
-            name=name,
-            surname=surname,
-            **kwargs
-        )
-        user.set_password(password)
-        user.save(using=self._db)
-        generate_avatar(user)
-        user.save(using=self._db)
-        return user
-
-    def create_superuser(self, email, name, surname, **kwargs):
-        kwargs['is_staff'] = True
-
-        return self.create_user(
-            email=email,
-            name=name,
-            surname=surname,
-            **kwargs
-        )
+from users.managers import UserManager
+from core.consts import (
+    NAMEMAXLENGTH, SURNAMEMAXLENGTH, PHONEMAXLENGTH, ABOUTMAXLENGTH
+)
 
 
 class User(AbstractUser):
     email = models.EmailField(
         unique=True, verbose_name='адрес электронной почты')
     name = models.CharField(
-        max_length=124, verbose_name='имя пользователя')
+        max_length=NAMEMAXLENGTH, verbose_name='имя пользователя')
     surname = models.CharField(
-        max_length=124, verbose_name='фамилия пользователя')
+        max_length=SURNAMEMAXLENGTH, verbose_name='фамилия пользователя')
     avatar = models.ImageField(
         blank=True, null=True, upload_to='avatars/',
         verbose_name='аватарка пользователя')
     phone = models.CharField(
-        max_length=12, null=True, unique=True, verbose_name='номер телефона')
+        max_length=PHONEMAXLENGTH, null=True, unique=True,
+        verbose_name='номер телефона')
     github_url = models.URLField(
         blank=True, verbose_name='ссылка на Github')
     about = models.TextField(
-        max_length=256, blank=True, verbose_name='описание профиля')
+        max_length=ABOUTMAXLENGTH, blank=True,
+        verbose_name='описание профиля')
     is_active = models.BooleanField(
         default=True, verbose_name='активный пользователь')
     is_staff = models.BooleanField(
